@@ -1,0 +1,101 @@
+/* assets/style.css - simple, clean design for the Online Voting System */
+:root {
+    --ink: #14213d;        /* main dark blue: header, headings */
+    --paper: #f4f6f9;      /* page background */
+    --card: #ffffff;
+    --line: #d9dee7;
+    --accent: #1d7a5f;     /* ballot green: main buttons */
+    --accent-dark: #15604a;
+    --error: #b3261e;
+    --error-bg: #fdecea;
+    --ok-bg: #e6f4ee;
+    --muted: #5b6575;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container { width: 100%; max-width: 860px; margin: 0 auto; padding: 0 16px; }
+main.container { flex: 1; padding-top: 28px; padding-bottom: 40px; }
+
+/* Header and menu */
+.site-header { background: var(--ink); color: #fff; }
+.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; padding-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.brand { color: #fff; font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+.nav nav { display: flex; align-items: center; gap: 18px; }
+.nav nav a { color: #dbe3f0; text-decoration: none; }
+.nav nav a:hover, .nav nav a:focus { color: #fff; text-decoration: underline; }
+.nav-user { color: #9fb0cc; font-size: 0.9rem; }
+
+/* Footer */
+.site-footer { border-top: 1px solid var(--line); padding: 16px 0; color: var(--muted); font-size: 0.85rem; text-align: center; }
+
+/* Headings */
+h1 { font-size: 1.7rem; margin: 0 0 8px; }
+h2 { font-size: 1.25rem; margin: 0 0 8px; }
+.lead { color: var(--muted); margin-top: 0; }
+
+/* Cards and forms */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 22px; margin-bottom: 18px; }
+.form-card { max-width: 440px; margin: 0 auto; }
+
+label { display: block; font-weight: 600; margin: 14px 0 4px; }
+input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%; padding: 10px 12px; font-size: 1rem;
+    border: 1px solid #b8c0cc; border-radius: 6px; background: #fff;
+}
+input:focus, .btn:focus, a:focus { outline: 3px solid #8ec9b6; outline-offset: 1px; }
+
+/* Buttons */
+.btn {
+    display: inline-block; padding: 10px 20px; font-size: 1rem; font-weight: 600;
+    background: var(--accent); color: #fff; border: 0; border-radius: 6px;
+    text-decoration: none; cursor: pointer;
+}
+.btn:hover { background: var(--accent-dark); }
+.btn-outline { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+.btn-outline:hover { background: var(--ink); color: #fff; }
+.btn-full { width: 100%; margin-top: 20px; }
+
+/* Messages */
+.alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; border-left: 5px solid; }
+.alert-error { background: var(--error-bg); border-color: var(--error); color: var(--error); }
+.alert-success { background: var(--ok-bg); border-color: var(--accent); color: var(--accent-dark); }
+.alert ul { margin: 0; padding-left: 18px; }
+
+/* Election list and candidates */
+.election { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.election .dates { color: var(--muted); font-size: 0.9rem; margin: 2px 0 0; }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--ok-bg); color: var(--accent-dark); font-weight: 600; font-size: 0.9rem; }
+
+.candidate {
+    display: flex; align-items: flex-start; gap: 12px;
+    border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
+}
+.candidate:hover { border-color: var(--accent); background: #f7fbf9; }
+.candidate input { margin-top: 5px; }
+.candidate .c-name { font-weight: 600; }
+.candidate .c-desc { color: var(--muted); font-size: 0.9rem; }
+
+/* Home page */
+.hero { text-align: center; padding: 36px 0 20px; }
+.hero h1 { font-size: 2.1rem; }
+.hero .actions { margin-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.steps { padding-left: 20px; }
+.small-link { text-align: center; margin-top: 14px; font-size: 0.95rem; }
+a { color: var(--accent-dark); }
+
+@media (max-width: 480px) {
+    h1 { font-size: 1.4rem; }
+    .hero h1 { font-size: 1.7rem; }
+}

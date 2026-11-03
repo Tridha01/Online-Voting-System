@@ -1,6 +1,4 @@
--- Online Voting System - database design (matches SRS section "ER Diagram" and the schema diagram)
--- Import this file in phpMyAdmin (Import tab).
-
+-- database.sql - Online Voting System (import this in phpMyAdmin)
 CREATE DATABASE IF NOT EXISTS online_voting;
 USE online_voting;
 
@@ -41,7 +39,7 @@ CREATE TABLE votes (
   election_id INT NOT NULL,
   candidate_id INT NOT NULL,
   voted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE (voter_id, election_id),          -- one vote per voter per election (FR-17)
+  UNIQUE (voter_id, election_id),
   FOREIGN KEY (voter_id) REFERENCES voters(voter_id),
   FOREIGN KEY (election_id) REFERENCES elections(election_id),
   FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE

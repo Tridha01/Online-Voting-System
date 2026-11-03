@@ -1,9 +1,1 @@
-# Local settings (each person has their own config.php)
 config.php
-
-# Temporary / editor files
-hash.php
-.vscode/
-Thumbs.db
-.DS_Store
-*.log
