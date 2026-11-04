@@ -1,13 +1,8 @@
 <?php
-// logout.php - ends the voter session (FR-6)
-require_once __DIR__ . '/config.php';
+// Ends the admin session (voter session, if any, is not touched).
+require_once __DIR__ . '/../config.php';
 
-// Remove only voter data, so an admin logged in on the same browser stays logged in
-unset($_SESSION['voter_id'], $_SESSION['voter_name']);
+unset($_SESSION['admin_id'], $_SESSION['admin_username']);
 
-if (empty($_SESSION)) {
-    session_destroy();      // nothing left in the session, so end it fully
-}
-
-header('Location: ' . BASE_URL . '/login.php');
+header('Location: ' . BASE_URL . '/admin/login.php');
 exit;
