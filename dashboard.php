@@ -1,42 +1,58 @@
 <?php
-// Admin home page: quick numbers and shortcuts.
-require_once __DIR__ . '/../includes/auth.php';
-require_admin();
+// FR-14: A logged-in voter sees the list of active elections.
+require_once __DIR__ . '/includes/auth.php';
+require_voter();
 $page_title = 'Dashboard';
 
-// Counts a whole table. $table is always a fixed name written by us (never user input).
-function count_rows($conn, $table) {
-    $result = $conn->query("SELECT COUNT(*) AS c FROM $table");
-    $row = $result->fetch_assoc();
-    return (int)$row['c'];
-}
+$voter_id = (int)$_SESSION['voter_id'];
 
-$total_voters     = count_rows($conn, 'voters');
-$total_elections  = count_rows($conn, 'elections');
-$total_candidates = count_rows($conn, 'candidates');
-$total_votes      = count_rows($conn, 'votes');
+// Elections that are running right now, and whether this voter already voted in each
+$stmt = $conn->prepare(
+    'SELECT el.election_id, el.title, el.start_time, el.end_time,
+            (SELECT COUNT(*) FROM votes v WHERE v.election_id = el.election_id AND v.voter_id = ?) AS has_voted
+     FROM elections el
+     WHERE NOW() BETWEEN el.start_time AND el.end_time
+     ORDER BY el.end_time ASC'
+);
+$stmt->bind_param('i', $voter_id);
+$stmt->execute();
+$elections = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
-$result = $conn->query('SELECT COUNT(*) AS c FROM elections WHERE NOW() BETWEEN start_time AND end_time');
-$active_elections = (int)$result->fetch_assoc()['c'];
-
-include __DIR__ . '/admin_header.php';
+include __DIR__ . '/includes/header.php';
 ?>
-<h1>Dashboard</h1>
-<p>Welcome, <?php echo e($_SESSION['admin_username'] ?? 'Admin'); ?>.</p>
-
-<div class="cards">
-  <div class="stat"><b><?php echo $total_voters; ?></b>Registered voters</div>
-  <div class="stat"><b><?php echo $total_elections; ?></b>Elections</div>
-  <div class="stat"><b><?php echo $active_elections; ?></b>Active now</div>
-  <div class="stat"><b><?php echo $total_candidates; ?></b>Candidates</div>
-  <div class="stat"><b><?php echo $total_votes; ?></b>Votes cast</div>
-</div>
+<h1>Welcome, <?php echo e($_SESSION['voter_name'] ?? 'Voter'); ?></h1>
 
 <div class="card">
-  <h3>Quick actions</h3>
-  <a class="btn" href="<?php echo BASE_URL; ?>/admin/add_election.php">Create / view elections</a>
-  <a class="btn" href="<?php echo BASE_URL; ?>/admin/candidates.php">Manage candidates</a>
-  <a class="btn" href="<?php echo BASE_URL; ?>/admin/voters.php">View voters</a>
-  <a class="btn" href="<?php echo BASE_URL; ?>/admin/results.php">View results</a>
+  <h2>Active elections</h2>
+  <?php if (count($elections) === 0) { ?>
+    <p>There are no active elections right now. Please check again later.</p>
+  <?php } else { ?>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Election</th><th>Ends on</th><th>Your status</th><th>Action</th></tr>
+      <?php foreach ($elections as $el) { ?>
+        <tr>
+          <td><?php echo e($el['title']); ?></td>
+          <td><?php echo e(date('d M Y, h:i A', strtotime($el['end_time']))); ?></td>
+          <td>
+            <?php if ((int)$el['has_voted'] > 0) { ?>
+              <span class="badge badge-green">Voted</span>
+            <?php } else { ?>
+              <span class="badge badge-orange">Not voted yet</span>
+            <?php } ?>
+          </td>
+          <td>
+            <?php if ((int)$el['has_voted'] > 0) { ?>
+              -
+            <?php } else { ?>
+              <a class="btn btn-green" href="<?php echo BASE_URL; ?>/vote.php?election_id=<?php echo (int)$el['election_id']; ?>">Vote now</a>
+            <?php } ?>
+          </td>
+        </tr>
+      <?php } ?>
+    </table>
+    </div>
+  <?php } ?>
 </div>
-<?php include __DIR__ . '/admin_footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

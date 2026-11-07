@@ -1,8 +1,7 @@
-</main>
-<footer class="site-footer">
-    <div class="container">
-        Online Voting System &middot; BCA 5th Semester Mini Project, 2026
-    </div>
-</footer>
+</div>
+<div class="footer">
+  Online Voting System - BCA 5th Semester Mini Project |
+  <a href="<?php echo BASE_URL; ?>/admin/login.php">Admin login</a>
+</div>
 </body>
 </html>

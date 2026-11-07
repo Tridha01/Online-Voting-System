@@ -1,50 +1,48 @@
 <?php
-// vote.php - show candidates and record one vote (FR-15 to FR-20)
+// FR-15: Show the candidates of the selected election.
+// FR-16: Voter selects one candidate and submits the vote.
+// FR-17: Only one vote per voter per election.
+// FR-18: Confirmation message after the vote is recorded.
+// FR-19: The page never shows who a voter voted for.
+// FR-20: No voting before the start time or after the end time.
 require_once __DIR__ . '/includes/auth.php';
-require_voter();                                   // must be logged in
+require_voter();
+$page_title = 'Vote';
 
-$voter_id    = $_SESSION['voter_id'];              // never taken from the form (FR-19 / safety)
+$voter_id    = (int)$_SESSION['voter_id'];
 $election_id = (int)($_GET['election_id'] ?? $_POST['election_id'] ?? 0);
 
-$error     = '';
-$success   = false;
-$show_form = true;
-
-// 1. Load the election and ask MySQL if it is active right now (FR-20)
-$stmt = $conn->prepare(
-    'SELECT election_id, title, start_time, end_time,
-            (start_time <= NOW() AND end_time >= NOW()) AS is_active,
-            (start_time > NOW()) AS not_started
-     FROM elections WHERE election_id = ?'
-);
+// Load the election
+$stmt = $conn->prepare('SELECT election_id, title, start_time, end_time FROM elections WHERE election_id = ?');
 $stmt->bind_param('i', $election_id);
 $stmt->execute();
 $election = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$election) {
-    $error     = 'Election not found.';
-    $show_form = false;
-} else {
-    // 2. Has this voter already voted in this election? (FR-17, layer 1)
-    $stmt = $conn->prepare('SELECT vote_id FROM votes WHERE voter_id = ? AND election_id = ?');
-    $stmt->bind_param('ii', $voter_id, $election_id);
-    $stmt->execute();
-    $stmt->store_result();
-    $already_voted = ($stmt->num_rows > 0);
-    $stmt->close();
+    flash_set('Election not found.', 'error');
+    redirect('/dashboard.php');
+}
 
-    // 3. Decide what to show, in this order
-    if (!$election['is_active']) {
-        $error     = $election['not_started'] ? 'This election has not started yet.' : 'This election has ended.';
-        $show_form = false;
+// FR-20: is voting open? (Upcoming / Active / Ended)
+$status = election_status($election['start_time'], $election['end_time']);
+
+// FR-17: has this voter already voted in this election?
+$stmt = $conn->prepare('SELECT vote_id FROM votes WHERE voter_id = ? AND election_id = ?');
+$stmt->bind_param('ii', $voter_id, $election_id);
+$stmt->execute();
+$stmt->store_result();
+$already_voted = $stmt->num_rows > 0;
+$stmt->close();
+
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($status !== 'Active') {
+        $error = 'Voting is not open for this election.';
     } elseif ($already_voted) {
-        $error     = 'You have already voted in this election.';
-        $show_form = false;
-    }
-
-    // 4. Form submitted: save the vote
-    if ($show_form && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $error = 'You have already voted in this election.';
+    } else {
         $candidate_id = (int)($_POST['candidate_id'] ?? 0);
 
         // The chosen candidate must belong to THIS election
@@ -52,35 +50,36 @@ if (!$election) {
         $stmt->bind_param('ii', $candidate_id, $election_id);
         $stmt->execute();
         $stmt->store_result();
-        $valid_candidate = ($stmt->num_rows > 0);
+        $valid = $stmt->num_rows > 0;
         $stmt->close();
 
-        if (!$valid_candidate) {
+        if (!$valid) {
             $error = 'Please select one candidate.';
         } else {
-            try {
-                $stmt = $conn->prepare('INSERT INTO votes (voter_id, election_id, candidate_id) VALUES (?, ?, ?)');
-                $stmt->bind_param('iii', $voter_id, $election_id, $candidate_id);
-                $stmt->execute();
+            // voter_id comes from the session, never from the form
+            $stmt = $conn->prepare('INSERT INTO votes (voter_id, election_id, candidate_id) VALUES (?, ?, ?)');
+            $stmt->bind_param('iii', $voter_id, $election_id, $candidate_id);
+            if ($stmt->execute()) {
                 $stmt->close();
-                $success   = true;                 // FR-18
-                $show_form = false;
-            } catch (mysqli_sql_exception $e) {
-                // FR-17, layer 2: the UNIQUE (voter_id, election_id) rule in the database
-                if ($e->getCode() == 1062) {
+                flash_set('Your vote has been recorded successfully. Thank you for voting!');   // FR-18
+                redirect('/dashboard.php');
+            } else {
+                // 1062 = the database rule UNIQUE (voter_id, election_id) blocked a second vote
+                if ($stmt->errno === 1062) {
                     $error = 'You have already voted in this election.';
+                    $already_voted = true;
                 } else {
-                    $error = 'Could not record your vote. Please try again.';
+                    $error = 'Could not save your vote. Please try again.';
                 }
-                $show_form = false;
+                $stmt->close();
             }
         }
     }
 }
 
-// 5. Load candidates for the form (FR-15)
+// FR-15: candidates of this election
 $candidates = [];
-if ($show_form) {
+if ($status === 'Active' && !$already_voted) {
     $stmt = $conn->prepare('SELECT candidate_id, name, description FROM candidates WHERE election_id = ? ORDER BY name');
     $stmt->bind_param('i', $election_id);
     $stmt->execute();
@@ -88,47 +87,51 @@ if ($show_form) {
     $stmt->close();
 }
 
-$page_title = 'Vote';
 include __DIR__ . '/includes/header.php';
 ?>
+<h1><?php echo e($election['title']); ?></h1>
 
-<?php if ($election): ?>
-    <h1><?php echo htmlspecialchars($election['title']); ?></h1>
-<?php else: ?>
-    <h1>Vote</h1>
-<?php endif; ?>
+<?php if ($error !== '') { ?>
+  <div class="msg error"><?php echo e($error); ?></div>
+<?php } ?>
 
-<?php if ($success): ?>
-    <div class="alert alert-success">Your vote has been recorded. Thank you for voting.</div>
-<?php endif; ?>
+<div class="card">
+<?php if ($status === 'Upcoming') { ?>
 
-<?php if ($error !== ''): ?>
-    <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
-<?php endif; ?>
+  <p>Voting has not started yet. It opens on
+     <strong><?php echo e(date('d M Y, h:i A', strtotime($election['start_time']))); ?></strong>.</p>
 
-<?php if ($show_form): ?>
-    <?php if (empty($candidates)): ?>
-        <div class="card">No candidates have been added to this election yet.</div>
-    <?php else: ?>
-        <p class="lead">Select one candidate and submit. You cannot change your vote afterwards.</p>
-        <form method="post" action="" class="card">
-            <input type="hidden" name="election_id" value="<?php echo (int)$election_id; ?>">
+<?php } elseif ($status === 'Ended') { ?>
 
-            <?php foreach ($candidates as $c): ?>
-                <label class="candidate">
-                    <input type="radio" name="candidate_id" value="<?php echo (int)$c['candidate_id']; ?>" required>
-                    <span>
-                        <span class="c-name"><?php echo htmlspecialchars($c['name']); ?></span><br>
-                        <span class="c-desc"><?php echo htmlspecialchars($c['description'] ?? ''); ?></span>
-                    </span>
-                </label>
-            <?php endforeach; ?>
+  <p>Voting for this election has ended.</p>
 
-            <button type="submit" class="btn">Submit my vote</button>
-        </form>
-    <?php endif; ?>
-<?php endif; ?>
+<?php } elseif ($already_voted) { ?>
 
-<p><a href="<?php echo BASE_URL; ?>/dashboard.php">&larr; Back to dashboard</a></p>
+  <p>You have already voted in this election. Thank you!</p>
 
+<?php } elseif (count($candidates) === 0) { ?>
+
+  <p>This election has no candidates yet.</p>
+
+<?php } else { ?>
+
+  <p>Select <strong>one</strong> candidate. Your vote is secret and cannot be changed.</p>
+  <form method="post" action="" onsubmit="return confirm('Submit your vote? You cannot change it later.');">
+    <input type="hidden" name="election_id" value="<?php echo (int)$election_id; ?>">
+    <?php foreach ($candidates as $c) { ?>
+      <label class="candidate">
+        <input type="radio" name="candidate_id" value="<?php echo (int)$c['candidate_id']; ?>" required>
+        <strong><?php echo e($c['name']); ?></strong>
+        <?php if ($c['description'] !== null && $c['description'] !== '') { ?>
+          <small><?php echo e($c['description']); ?></small>
+        <?php } ?>
+      </label>
+    <?php } ?>
+    <button class="btn btn-green" type="submit">Submit vote</button>
+  </form>
+
+<?php } ?>
+</div>
+
+<a class="btn btn-grey" href="<?php echo BASE_URL; ?>/dashboard.php">Back to dashboard</a>
 <?php include __DIR__ . '/includes/footer.php'; ?>

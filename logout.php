@@ -1,8 +1,8 @@
 <?php
-// Ends the admin session (voter session, if any, is not touched).
-require_once __DIR__ . '/../config.php';
+// FR-6: Voter logs out (the voter session ends).
+require_once __DIR__ . '/includes/auth.php';
 
-unset($_SESSION['admin_id'], $_SESSION['admin_username']);
+unset($_SESSION['voter_id'], $_SESSION['voter_name']);
+flash_set('You have been logged out.');
 
-header('Location: ' . BASE_URL . '/admin/login.php');
-exit;
+redirect('/login.php');

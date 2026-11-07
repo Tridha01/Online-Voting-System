@@ -1,101 +1,51 @@
-/* assets/style.css - simple, clean design for the Online Voting System */
-:root {
-    --ink: #14213d;        /* main dark blue: header, headings */
-    --paper: #f4f6f9;      /* page background */
-    --card: #ffffff;
-    --line: #d9dee7;
-    --accent: #1d7a5f;     /* ballot green: main buttons */
-    --accent-dark: #15604a;
-    --error: #b3261e;
-    --error-bg: #fdecea;
-    --ok-bg: #e6f4ee;
-    --muted: #5b6575;
-}
-
+/* Online Voting System - voter side styles */
 * { box-sizing: border-box; }
+body { font-family: Arial, Helvetica, sans-serif; background: #f4f6f9; margin: 0; color: #222; line-height: 1.5; }
+a { color: #1F4E79; }
 
-body {
-    margin: 0;
-    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    line-height: 1.55;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
+.topbar { background: #1F4E79; color: #fff; padding: 12px 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+.topbar a { color: #fff; text-decoration: none; margin-left: 14px; }
+.topbar .brand { font-weight: bold; font-size: 18px; margin-left: 0; }
 
-.container { width: 100%; max-width: 860px; margin: 0 auto; padding: 0 16px; }
-main.container { flex: 1; padding-top: 28px; padding-bottom: 40px; }
+.container { max-width: 900px; margin: 24px auto; padding: 0 16px; min-height: 60vh; }
+h1 { font-size: 26px; margin-top: 0; color: #1F4E79; }
+h2 { font-size: 20px; }
 
-/* Header and menu */
-.site-header { background: var(--ink); color: #fff; }
-.nav { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; padding-bottom: 14px; flex-wrap: wrap; gap: 8px; }
-.brand { color: #fff; font-size: 1.25rem; font-weight: 700; text-decoration: none; }
-.nav nav { display: flex; align-items: center; gap: 18px; }
-.nav nav a { color: #dbe3f0; text-decoration: none; }
-.nav nav a:hover, .nav nav a:focus { color: #fff; text-decoration: underline; }
-.nav-user { color: #9fb0cc; font-size: 0.9rem; }
+.hero { background: #fff; border-radius: 8px; padding: 32px 24px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.12); margin-bottom: 20px; }
+.hero p { font-size: 17px; max-width: 600px; margin: 10px auto 20px; }
 
-/* Footer */
-.site-footer { border-top: 1px solid var(--line); padding: 16px 0; color: var(--muted); font-size: 0.85rem; text-align: center; }
+.card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.steps { display: flex; flex-wrap: wrap; gap: 14px; }
+.step { flex: 1 1 220px; background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.step b { color: #1F4E79; }
 
-/* Headings */
-h1 { font-size: 1.7rem; margin: 0 0 8px; }
-h2 { font-size: 1.25rem; margin: 0 0 8px; }
-.lead { color: var(--muted); margin-top: 0; }
+.form-card { max-width: 440px; margin: 0 auto 20px; }
+label { display: block; margin: 12px 0 4px; font-weight: bold; }
+input[type=text], input[type=email], input[type=password] { width: 100%; padding: 10px; border: 1px solid #aab; border-radius: 4px; font-size: 15px; }
+.hint { font-size: 13px; color: #666; }
 
-/* Cards and forms */
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 22px; margin-bottom: 18px; }
-.form-card { max-width: 440px; margin: 0 auto; }
+.btn { display: inline-block; background: #1F4E79; color: #fff; border: 0; padding: 10px 18px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 15px; margin-top: 12px; }
+.btn:hover { background: #173b5c; }
+.btn-grey { background: #666; }
+.btn-green { background: #2e7d32; }
 
-label { display: block; font-weight: 600; margin: 14px 0 4px; }
-input[type="text"], input[type="email"], input[type="password"] {
-    width: 100%; padding: 10px 12px; font-size: 1rem;
-    border: 1px solid #b8c0cc; border-radius: 6px; background: #fff;
-}
-input:focus, .btn:focus, a:focus { outline: 3px solid #8ec9b6; outline-offset: 1px; }
+.msg { padding: 10px 14px; border-radius: 4px; margin-bottom: 14px; }
+.msg.success { background: #e3f4e6; border: 1px solid #9ccfa4; }
+.msg.error { background: #fde7e7; border: 1px solid #e0a3a3; }
 
-/* Buttons */
-.btn {
-    display: inline-block; padding: 10px 20px; font-size: 1rem; font-weight: 600;
-    background: var(--accent); color: #fff; border: 0; border-radius: 6px;
-    text-decoration: none; cursor: pointer;
-}
-.btn:hover { background: var(--accent-dark); }
-.btn-outline { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
-.btn-outline:hover { background: var(--ink); color: #fff; }
-.btn-full { width: 100%; margin-top: 20px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { border: 1px solid #d0d7de; padding: 10px; text-align: left; font-size: 14px; }
+th { background: #D9E2F3; }
 
-/* Messages */
-.alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; border-left: 5px solid; }
-.alert-error { background: var(--error-bg); border-color: var(--error); color: var(--error); }
-.alert-success { background: var(--ok-bg); border-color: var(--accent); color: var(--accent-dark); }
-.alert ul { margin: 0; padding-left: 18px; }
+.badge { padding: 3px 10px; border-radius: 10px; font-size: 12px; color: #fff; }
+.badge-green { background: #2e7d32; }
+.badge-grey { background: #777; }
+.badge-orange { background: #ed8b00; }
 
-/* Election list and candidates */
-.election { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.election .dates { color: var(--muted); font-size: 0.9rem; margin: 2px 0 0; }
-.badge { display: inline-block; padding: 4px 12px; border-radius: 999px; background: var(--ok-bg); color: var(--accent-dark); font-weight: 600; font-size: 0.9rem; }
+.candidate { display: block; background: #f8fafc; border: 2px solid #d0d7de; border-radius: 8px; padding: 12px 14px; margin: 10px 0; cursor: pointer; font-weight: normal; }
+.candidate:hover { border-color: #1F4E79; background: #eef3fa; }
+.candidate input { margin-right: 10px; }
+.candidate small { display: block; color: #555; margin-left: 26px; }
 
-.candidate {
-    display: flex; align-items: flex-start; gap: 12px;
-    border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer;
-}
-.candidate:hover { border-color: var(--accent); background: #f7fbf9; }
-.candidate input { margin-top: 5px; }
-.candidate .c-name { font-weight: 600; }
-.candidate .c-desc { color: var(--muted); font-size: 0.9rem; }
-
-/* Home page */
-.hero { text-align: center; padding: 36px 0 20px; }
-.hero h1 { font-size: 2.1rem; }
-.hero .actions { margin-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-.steps { padding-left: 20px; }
-.small-link { text-align: center; margin-top: 14px; font-size: 0.95rem; }
-a { color: var(--accent-dark); }
-
-@media (max-width: 480px) {
-    h1 { font-size: 1.4rem; }
-    .hero h1 { font-size: 1.7rem; }
-}
+.footer { text-align: center; padding: 18px; color: #555; font-size: 13px; }
