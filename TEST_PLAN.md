@@ -28,4 +28,4 @@ Setup: XAMPP running, database `online_voting` imported, `sample_data.sql` impor
 | 21 | Security | vote.php | Open `vote.php?election_id=1` without logging in | Redirected to login page | Pass / Fail |
 | 22 | Security | register.php | Enter `<b>test</b>` as name | Shown as plain text, not bold (htmlspecialchars) | Pass / Fail |
 
-Note: FR-7 to FR-13 (admin functions) are tested by Pritam Mondal.
+
