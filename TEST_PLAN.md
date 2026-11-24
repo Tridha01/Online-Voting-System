@@ -1,4 +1,4 @@
-# Test Plan - Voter Side (Tridha Bhandhari)
+# Test Plan - Voter Side 
 
 Project: Online Voting System | BCA 5th Semester, 2026 | Bhawanipur Global Education
 Setup: XAMPP running, database `online_voting` imported, `sample_data.sql` imported.
